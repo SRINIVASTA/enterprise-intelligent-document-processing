@@ -1,44 +1,57 @@
+import pytesseract
 import re
 from typing import Dict, Any, List
 
-def parse_document_context(raw_text: str, low_conf_list: List[Dict[str, Any]]) -> Dict[str, Any]:
+def parse_document_by_coordinates(image_matrix) -> Dict[str, Any]:
     """
-    Applies deterministic search trees and standard regex models to structural document layouts.
+    Enterprise Layout-Agnostic Engine.
+    Uses Tesseract structural bounding boxes to find keys and capture adjacent values.
     """
-    # 1. Invoice Number Extraction Regex with anomaly corrections
-    inv_match = re.search(r'INVOICE\s*[\u00A5\u00A3\u20A0-\u20CF#¥]*\s*([A-Za-z0-9\s\-]+)', raw_text, re.IGNORECASE)
+    # Get complete spatial DataFrame directory from the image matrix
+    custom_config = r'--psm 6'
+    data = pytesseract.image_to_data(image_matrix, config=custom_config, output_type=pytesseract.Output.DICT)
+    
     invoice_number = "Not Found"
-    if inv_match:
-        extracted_slug = inv_match.group(1).split("BillTe")[0]  # Take the first string component safely
-        invoice_number = extracted_slug.strip()                 # Call strip on the string item
-        invoice_number = invoice_number.replace("Wey", "WV").replace("wey", "WV")
-
-    # 2. Total Amount Extraction Lookups
-    lines = raw_text.split('\n')
     total_amount = "Not Found"
     
-    for line in lines:
-        if any(keyword in line.upper() for keyword in ["TOTAL", "DUE", "SUBTOTAL", "HANDUNG", "PST", "GST"]):
-            numeric_tokens = re.findall(r'\b\d+(?:[.,]\d+)*\b', line)
-            if numeric_tokens:
-                total_amount = numeric_tokens[-1]
-                break
+    n_boxes = len(data['text'])
+    for i in range(n_boxes):
+        word = data['text'][i].upper().strip()
+        
+        # 1. DYNAMIC INVOICE NUMBER ANCHORING
+        # If we hit the keyword "INVOICE", look at the words immediately to its right on the same vertical alignment
+        if "INVOICE" in word:
+            anchor_top = data['top'][i]
+            anchor_left = data['left'][i]
+            
+            # Look ahead for tokens sharing the same row boundary (within a 15-pixel variance limit)
+            for j in range(i + 1, min(i + 10, n_boxes)):
+                if abs(data['top'][j] - anchor_top) < 15:
+                    potential_val = data['text'][j].strip()
+                    # Clean out noise symbols dynamically using character sets instead of hardcoding
+                    potential_val = re.sub(r'[\u00A5\u00A3#¥[:space:]]', '', potential_val)
+                    if len(potential_val) > 2 and potential_val.isalnum():
+                        invoice_number = potential_val
+                        break
 
-    # Emergency Fallback Lookup Rule
-    if total_amount == "Not Found" or total_amount == "6":
-        all_numeric_tokens = re.findall(r'\b\d+(?:[.,]\d+)*\b', raw_text)
-        sanitized_metrics = [n for n in all_numeric_tokens if n not in ['2006', '12345', '6', '3']]
-        if sanitized_metrics:
-            total_amount = sanitized_metrics[-1]
+        # 2. DYNAMIC TOTAL DUE ANCHORING
+        # If we hit the absolute anchor token "DUE", grab the rightmost number on that exact line array
+        if "DUE" in word or "TOTAL" in word:
+            anchor_top = data['top'][i]
+            line_numbers = []
+            
+            # Scan the adjacent matrix space for floating numeric decimal strings
+            for j in range(n_boxes):
+                if abs(data['top'][j] - anchor_top) < 15: # Same line array
+                    potential_num = data['text'][j].strip()
+                    # Check if it matches a standard financial digit sequence
+                    if re.match(r'^\d+([.,]\d+)*$', potential_num):
+                        line_numbers.append(potential_num)
+            
+            if line_numbers:
+                total_amount = line_numbers[-1] # The rightmost item in a table column layout is always the line total
 
     return {
-        "document_type": "Invoice",
-        "extracted_data": {
-            "invoice_number": invoice_number,
-            "total_amount": total_amount
-        },
-        "idp_validation_flags": {
-            "low_confidence_detected": len(low_conf_list) > 0,
-            "review_required_items": low_conf_list
-        }
+        "invoice_number": invoice_number,
+        "total_amount": total_amount
     }
