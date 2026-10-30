@@ -4,7 +4,6 @@ An enterprise-grade, microservice-ready **Intelligent Document Processing (IDP)*
 
 ---
 ![Enterprise IDP Platform](assets/dashboard-preview.png)
-
 ---
 
 ## 🏗️ System Architecture & Workflow Pipeline
