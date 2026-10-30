@@ -9,7 +9,8 @@ def parse_document_context(raw_text: str, low_conf_list: List[Dict[str, Any]]) -
     inv_match = re.search(r'INVOICE\s*[\u00A5\u00A3\u20A0-\u20CF#¥]*\s*([A-Za-z0-9\s\-]+)', raw_text, re.IGNORECASE)
     invoice_number = "Not Found"
     if inv_match:
-        invoice_number = inv_match.group(1).split("BillTe").strip()
+        extracted_slug = inv_match.group(1).split("BillTe")[0]  # Take the first string component safely
+        invoice_number = extracted_slug.strip()                 # Call strip on the string item
         invoice_number = invoice_number.replace("Wey", "WV").replace("wey", "WV")
 
     # 2. Total Amount Extraction Lookups
