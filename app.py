@@ -7,7 +7,6 @@ from core.vision_engine import preprocess_image
 from core.ocr_engine import extract_structured_text
 from core.data_parser import parse_document_context
 
-# Configure Web Page metadata
 st.set_page_config(
     page_title="Enterprise IDP & OCR Engine",
     page_icon="🤖",
@@ -17,12 +16,8 @@ st.set_page_config(
 st.title("🤖 Enterprise Intelligent Document Processing (IDP) Platform")
 st.markdown("---")
 
-# ==============================================================================
-# ⚙️ SIDEBAR CONFIGURATION PORTAL
-# ==============================================================================
 st.sidebar.header("⚙️ Pipeline Configuration")
 
-# Dual Processing Mode Switcher moved to sidebar
 processing_mode = st.sidebar.radio(
     "Select Document Ingestion Method:",
     ["Option 1: System Default Mock (sample.png)", "Option 2: Upload Custom Document Asset"]
@@ -52,29 +47,21 @@ else:
         target_file_path = temp_filename
         is_ready_to_process = True
 
-# ==============================================================================
-# 📊 MAIN DASHBOARD VIEWPORTS
-# ==============================================================================
 col1, col2 = st.columns(2)
 
 if is_ready_to_process and target_file_path is not None:
     with st.spinner("Executing Computer Vision Filters & Running OCR engine..."):
         try:
-            # 1. Trigger OpenCV Operations
             cleaned_matrix = preprocess_image(target_file_path)
-            
-            # 2. Trigger OCR Matrix Sweep
             raw_text_stream, low_confidence_registry = extract_structured_text(cleaned_matrix)
             
-            # 3. Trigger Deterministic Data Parser
-            final_json_payload = parse_document_context(raw_text_stream, low_confidence_registry)
+            # Key Change: Passing the cleaned image matrix into the third positional parameter slot
+            final_json_payload = parse_document_context(raw_text_stream, low_confidence_registry, cleaned_matrix)
             
-            # --- Render Dashboard Analytics Layer ---
             with col1:
                 st.subheader("🖼️ Processed Image Grid Visualizer")
                 display_img = cv2.cvtColor(cleaned_matrix, cv2.COLOR_GRAY2RGB)
                 st.image(display_img, caption="Enhanced Contrast Matrix Layer sent to OCR core", use_container_width=True)
-                
                 st.subheader("📦 Final Structured JSON Data Output")
                 st.json(final_json_payload)
 
@@ -96,7 +83,6 @@ if is_ready_to_process and target_file_path is not None:
             st.error(f"Execution Error within pipeline pipelines: {str(e)}")
             
         finally:
-            # Cleanup dynamic custom uploads to maintain stateless footprint
             if target_file_path.startswith("temp_") and os.path.exists(target_file_path):
                 os.remove(target_file_path)
 else:
