@@ -17,44 +17,46 @@ st.set_page_config(
 st.title("🤖 Enterprise Intelligent Document Processing (IDP) Platform")
 st.markdown("---")
 
-# Setup layout blocks: Left column for operations, Right column for data tracking
+# ==============================================================================
+# ⚙️ SIDEBAR CONFIGURATION PORTAL
+# ==============================================================================
+st.sidebar.header("⚙️ Pipeline Configuration")
+
+# Dual Processing Mode Switcher moved to sidebar
+processing_mode = st.sidebar.radio(
+    "Select Document Ingestion Method:",
+    ["Option 1: System Default Mock (sample.png)", "Option 2: Upload Custom Document Asset"]
+)
+
+target_file_path = None
+is_ready_to_process = False
+
+if "Option 1" in processing_mode:
+    default_mock_path = "sample.png"
+    if os.path.exists(default_mock_path):
+        st.sidebar.success("✅ Mock reference matrix 'sample.png' loaded.")
+        target_file_path = default_mock_path
+        is_ready_to_process = True
+    else:
+        st.sidebar.error("❌ 'sample.png' not found in root directory.")
+        
+else:
+    uploaded_file = st.sidebar.file_uploader(
+        "Upload custom document asset:", 
+        type=["png", "jpg", "jpeg", "tiff"]
+    )
+    if uploaded_file is not None:
+        temp_filename = f"temp_{uploaded_file.name}"
+        with open(temp_filename, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        target_file_path = temp_filename
+        is_ready_to_process = True
+
+# ==============================================================================
+# 📊 MAIN DASHBOARD VIEWPORTS
+# ==============================================================================
 col1, col2 = st.columns(2)
 
-with col1:
-    st.header("⚙️ Pipeline Configuration Portal")
-    
-    # Dual Processing Mode Switcher
-    processing_mode = st.radio(
-        "Select Document Ingestion Method:",
-        ["Option 1: Process System Default Mock (sample.png)", "Option 2: Upload Custom Document Asset"]
-    )
-    
-    target_file_path = None
-    is_ready_to_process = False
-
-    if "Option 1" in processing_mode:
-        default_mock_path = "sample.png"
-        if os.path.exists(default_mock_path):
-            st.info("🔄 Running System Node Mode: Initializing pre-configured 'sample.png' reference matrix.")
-            target_file_path = default_mock_path
-            is_ready_to_process = True
-        else:
-            st.error("❌ Mock Halted: 'sample.png' was not found in the root directory of the repository. Please commit a sample image asset to your GitHub repository.")
-            
-    else:
-        uploaded_file = st.file_uploader(
-            "Upload custom document or invoice screenshot...", 
-            type=["png", "jpg", "jpeg", "tiff"]
-        )
-        if uploaded_file is not None:
-            # Buffer incoming stream payload to disk container space
-            temp_filename = f"temp_{uploaded_file.name}"
-            with open(temp_filename, "wb") as f:
-                f.write(uploaded_file.getbuffer())
-            target_file_path = temp_filename
-            is_ready_to_process = True
-
-# Execute processing cycle if files pass checks
 if is_ready_to_process and target_file_path is not None:
     with st.spinner("Executing Computer Vision Filters & Running OCR engine..."):
         try:
@@ -97,3 +99,6 @@ if is_ready_to_process and target_file_path is not None:
             # Cleanup dynamic custom uploads to maintain stateless footprint
             if target_file_path.startswith("temp_") and os.path.exists(target_file_path):
                 os.remove(target_file_path)
+else:
+    with col1:
+        st.info("👈 Please select a method or upload a file in the sidebar portal to trigger processing.")
