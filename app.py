@@ -18,7 +18,7 @@ st.title("🤖 Enterprise Intelligent Document Processing (IDP) Platform")
 st.markdown("---")
 
 # Setup layout blocks: Left column for operations, Right column for data tracking
-col1, col2 = st.columns()
+col1, col2 = st.columns(2)
 
 with col1:
     st.header("⚙️ Pipeline Configuration Portal")
