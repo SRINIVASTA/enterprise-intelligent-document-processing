@@ -134,7 +134,6 @@ def parse_document_context_via_llm(raw_text_stream: str, low_conf_list: list) ->
     )
 
     try:
-        # Enforce structural inference via high-efficiency models
         response = client.chat.completions.create(
             model="llama3-8b-8192",
             messages=[
