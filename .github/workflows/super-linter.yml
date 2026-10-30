@@ -1,0 +1,42 @@
+name: Enterprise IDP Pipeline Verification CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  verify-build:
+    name: Build & Code Verification Engine
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Checkout codebase matrices
+    - name: Checkout Repository Code Nodes
+      uses: actions/checkout@v4
+
+    # 2. Provision operating system binaries for Tesseract OCR
+    - name: Install System OCR Binaries
+      run: |
+        sudo apt-get update
+        sudo apt-get install tesseract-ocr -y
+
+    # 3. Initialize Python execution environment layer
+    - name: Setup Python Runtime Env
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    # 4. Install pipeline workspace libraries
+    - name: Install Architecture Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    # 5. Execute programmatic syntax validation check
+    - name: Lint and Validate Python Syntax Compilation
+      run: |
+        # Compile all scripts to verify structural compilation health
+        python -m compileall .
