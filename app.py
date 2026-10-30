@@ -3,10 +3,12 @@ import cv2
 import numpy as np
 import os
 import shutil
+import json
 from core.vision_engine import preprocess_image
 from core.ocr_engine import extract_structured_text
 from core.data_parser import parse_document_context
 
+# Configure Web Page metadata
 st.set_page_config(
     page_title="Enterprise IDP & OCR Engine",
     page_icon="🤖",
@@ -16,8 +18,12 @@ st.set_page_config(
 st.title("🤖 Enterprise Intelligent Document Processing (IDP) Platform")
 st.markdown("---")
 
+# ==============================================================================
+# ⚙️ SIDEBAR CONFIGURATION PORTAL
+# ==============================================================================
 st.sidebar.header("⚙️ Pipeline Configuration")
 
+# Dual Processing Mode Switcher moved to sidebar
 processing_mode = st.sidebar.radio(
     "Select Document Ingestion Method:",
     ["Option 1: System Default Mock (sample.png)", "Option 2: Upload Custom Document Asset"]
@@ -47,35 +53,46 @@ else:
         target_file_path = temp_filename
         is_ready_to_process = True
 
+# ==============================================================================
+# 📊 MAIN DASHBOARD VIEWPORTS
+# ==============================================================================
 col1, col2 = st.columns(2)
 
 if is_ready_to_process and target_file_path is not None:
     with st.spinner("Executing Computer Vision Filters & Running OCR engine..."):
         try:
+            # 1. Trigger OpenCV Operations
             cleaned_matrix = preprocess_image(target_file_path)
+            
+            # 2. Trigger OCR Matrix Sweep
             raw_text_stream, low_confidence_registry = extract_structured_text(cleaned_matrix)
             
-            # Key Change: Passing the cleaned image matrix into the third positional parameter slot
+            # 3. Trigger Deterministic Data Parser
             final_json_payload = parse_document_context(raw_text_stream, low_confidence_registry, cleaned_matrix)
             
+            # --- Render Dashboard Analytics Layer ---
             with col1:
                 st.subheader("🖼️ Processed Image Grid Visualizer")
                 display_img = cv2.cvtColor(cleaned_matrix, cv2.COLOR_GRAY2RGB)
                 st.image(display_img, caption="Enhanced Contrast Matrix Layer sent to OCR core", use_container_width=True)
-                st.subheader("📦 Final Structured JSON Data Output")
-                st.json(final_json_payload)
+                
+                # 4. Collapsible JSON Viewer with clean 4-space code indentation
+                st.write("") # Layout spacer
+                with st.expander("📦 Click to Expand Final Structured JSON Data Output", expanded=False):
+                    formatted_json_string = json.dumps(final_json_payload, indent=4, ensure_ascii=False)
+                    st.code(formatted_json_string, language="json")
 
             with col2:
                 st.header("📝 Raw OCR Extracted Text Payload")
                 if raw_text_stream.strip():
-                    st.text_area(label="Translated Text Strings Output", value=raw_text_stream, height=350)
+                    st.text_area(label="Translated Text Strings Output", value=raw_text_stream, height=350, label_visibility="collapsed")
                 else:
                     st.warning("OCR Engine returned empty token array strings.")
                     
                 st.subheader("⚠️ Human-in-the-Loop Risk Verification")
                 if final_json_payload["idp_validation_flags"]["low_confidence_detected"]:
                     st.error("Low-confidence tokens captured! Manual review required.")
-                    st.dataframe(low_confidence_registry)
+                    st.dataframe(low_confidence_registry, use_container_width=True)
                 else:
                     st.success("All character extraction vectors verified over 50% safety margin.")
 
@@ -83,6 +100,7 @@ if is_ready_to_process and target_file_path is not None:
             st.error(f"Execution Error within pipeline pipelines: {str(e)}")
             
         finally:
+            # Cleanup dynamic custom uploads to maintain stateless footprint
             if target_file_path.startswith("temp_") and os.path.exists(target_file_path):
                 os.remove(target_file_path)
 else:
