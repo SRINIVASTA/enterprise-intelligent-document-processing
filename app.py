@@ -4,9 +4,9 @@ import numpy as np
 import os
 import json
 import pandas as pd
+import pytesseract
 from core.vision_engine import preprocess_image
 from core.ocr_engine import extract_structured_text
-# Importing both spatial and LLM analytical core modules
 from core.data_parser import parse_document_context_spatial, parse_document_context_via_llm
 
 # Configure Web Page metadata
@@ -77,12 +77,8 @@ if is_ready_to_process and target_files:
                 
                 # 2. Split Parsing Routes Dynamically Based on Pipeline State Selection
                 if "Option 3" in processing_mode:
-                    # Fetching full Tesseract Image data geometry mapping array
-                    import pytesseract
-                    ocr_data = pytesseract.image_to_data(cleaned_matrix, config=r'--psm 6', output_type=pytesseract.Output.DICT)
                     final_json_payload = parse_document_context_via_llm(raw_text_stream, low_confidence_registry)
                 else:
-                    import pytesseract
                     ocr_data = pytesseract.image_to_data(cleaned_matrix, config=r'--psm 6', output_type=pytesseract.Output.DICT)
                     final_json_payload = parse_document_context_spatial(ocr_data, low_confidence_registry)
                 
