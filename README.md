@@ -3,6 +3,9 @@
 An enterprise-grade, microservice-ready **Intelligent Document Processing (IDP)** pipeline engineered in Python. This repository combines advanced computer vision text enhancement pipelines, raw Optical Character Recognition (OCR) matrix extraction arrays, spatial regular expression trees, and advanced LLM semantic parsing via Groq Cloud API to convert unstructured, noisy document images into schema-compliant, structured JSON datasets.
 
 ---
+![Enterprise IDP Platform](assets/dashboard-preview.png)
+
+---
 
 ## 🏗️ System Architecture & Workflow Pipeline
 
