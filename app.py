@@ -2,12 +2,12 @@ import streamlit as st
 import cv2
 import numpy as np
 import os
-import shutil
 import json
 import pandas as pd
 from core.vision_engine import preprocess_image
 from core.ocr_engine import extract_structured_text
-from core.data_parser import parse_document_context
+# Importing both spatial and LLM analytical core modules
+from core.data_parser import parse_document_context_spatial, parse_document_context_via_llm
 
 # Configure Web Page metadata
 st.set_page_config(
@@ -26,7 +26,11 @@ st.sidebar.header("⚙️ Pipeline Configuration")
 
 processing_mode = st.sidebar.radio(
     "Select Document Ingestion Method:",
-    ["Option 1: System Default Mock (sample.png)", "Option 2: Upload Files (Supports Single or Bulk Uploads)"]
+    [
+        "Option 1: System Default Mock (sample.png)", 
+        "Option 2: Upload Files (Spatial Regex Mode)",
+        "Option 3: Upload Files (Groq LLM Engine Mode)"
+    ]
 )
 
 target_files = []  # Array list to manage processing queues
@@ -42,7 +46,6 @@ if "Option 1" in processing_mode:
         st.sidebar.error("❌ 'sample.png' not found in root directory.")
         
 else:
-    # Key Change: accept_multiple_files=True allows users to select 1 or up to 50 documents at once
     uploaded_files = st.sidebar.file_uploader(
         "Upload custom document asset(s):", 
         type=["png", "jpg", "jpeg", "tiff"],
@@ -68,10 +71,20 @@ if is_ready_to_process and target_files:
     for idx, file_node in enumerate(target_files):
         with st.spinner(f"Processing ({idx + 1}/{len(target_files)}): {file_node['name']}..."):
             try:
-                # 1. Trigger Core Engine Processing Pipes
+                # 1. Trigger Core Vision Engine & Tesseract Processing Pipes
                 cleaned_matrix = preprocess_image(file_node["path"])
                 raw_text_stream, low_confidence_registry = extract_structured_text(cleaned_matrix)
-                final_json_payload = parse_document_context(raw_text_stream, low_confidence_registry, cleaned_matrix)
+                
+                # 2. Split Parsing Routes Dynamically Based on Pipeline State Selection
+                if "Option 3" in processing_mode:
+                    # Fetching full Tesseract Image data geometry mapping array
+                    import pytesseract
+                    ocr_data = pytesseract.image_to_data(cleaned_matrix, config=r'--psm 6', output_type=pytesseract.Output.DICT)
+                    final_json_payload = parse_document_context_via_llm(raw_text_stream, low_confidence_registry)
+                else:
+                    import pytesseract
+                    ocr_data = pytesseract.image_to_data(cleaned_matrix, config=r'--psm 6', output_type=pytesseract.Output.DICT)
+                    final_json_payload = parse_document_context_spatial(ocr_data, low_confidence_registry)
                 
                 # Append extracted parameters to a summary log list for bulk reporting rows
                 bulk_results_summary.append({
@@ -82,7 +95,6 @@ if is_ready_to_process and target_files:
                 })
                 
                 # --- INTERACTIVE SINGLE-FILE VISUALIZER TIERS ---
-                # If only one file exists, show full visual graphs as before
                 if len(target_files) == 1:
                     with col1:
                         st.subheader("🖼️ Processed Image Grid Visualizer")
@@ -114,14 +126,12 @@ if is_ready_to_process and target_files:
                     os.remove(file_node["path"])
 
     # --- MULTI-FILE BULK VIEW PANELS ---
-    # If multiple files are processed, display a clean consolidated data table summary block
     if len(target_files) > 1:
         with col1:
             st.header("🏆 Consolidated Bulk Processing Report Summary")
             summary_df = pd.DataFrame(bulk_results_summary)
             st.dataframe(summary_df, use_container_width=True)
             
-            # Export results to a structured CSV download button on-screen
             csv_data = summary_df.to_csv(index=False).encode('utf-8')
             st.download_button(
                 label="📥 Download Consolidated Bulk Results CSV Sheet",
