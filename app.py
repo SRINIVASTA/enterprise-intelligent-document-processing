@@ -2,6 +2,7 @@ import streamlit as st
 import cv2
 import numpy as np
 import os
+import shutil
 from core.vision_engine import preprocess_image
 from core.ocr_engine import extract_structured_text
 from core.data_parser import parse_document_context
@@ -16,42 +17,61 @@ st.set_page_config(
 st.title("🤖 Enterprise Intelligent Document Processing (IDP) Platform")
 st.markdown("---")
 
-# Setup layout blocks: Left column for operations, Right column for raw text tracking
-col1, col2 = st.columns([1, 1])
+# Setup layout blocks: Left column for operations, Right column for data tracking
+col1, col2 = st.columns()
 
 with col1:
-    st.header("📤 Document Input Subsystem")
-    uploaded_file = st.file_uploader(
-        "Upload a noisy document or invoice screenshot...", 
-        type=["png", "jpg", "jpeg", "tiff"]
+    st.header("⚙️ Pipeline Configuration Portal")
+    
+    # Dual Processing Mode Switcher
+    processing_mode = st.radio(
+        "Select Document Ingestion Method:",
+        ["Option 1: Process System Default Mock (sample.png)", "Option 2: Upload Custom Document Asset"]
     )
+    
+    target_file_path = None
+    is_ready_to_process = False
 
-if uploaded_file is not None:
-    # 1. Temporarily buffer incoming stream payload to disk node
-    temp_filename = f"temp_{uploaded_file.name}"
-    with open(temp_filename, "wb") as f:
-        f.write(uploaded_file.getbuffer())
-        
-    st.success("File securely uploaded and buffered successfully!")
+    if "Option 1" in processing_mode:
+        default_mock_path = "sample.png"
+        if os.path.exists(default_mock_path):
+            st.info("🔄 Running System Node Mode: Initializing pre-configured 'sample.png' reference matrix.")
+            target_file_path = default_mock_path
+            is_ready_to_process = True
+        else:
+            st.error("❌ Mock Halted: 'sample.png' was not found in the root directory of the repository. Please commit a sample image asset to your GitHub repository.")
+            
+    else:
+        uploaded_file = st.file_uploader(
+            "Upload custom document or invoice screenshot...", 
+            type=["png", "jpg", "jpeg", "tiff"]
+        )
+        if uploaded_file is not None:
+            # Buffer incoming stream payload to disk container space
+            temp_filename = f"temp_{uploaded_file.name}"
+            with open(temp_filename, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            target_file_path = temp_filename
+            is_ready_to_process = True
 
-    # 2. Trigger Core Engine Processing Pipes
+# Execute processing cycle if files pass checks
+if is_ready_to_process and target_file_path is not None:
     with st.spinner("Executing Computer Vision Filters & Running OCR engine..."):
         try:
-            # OpenCV Layer
-            cleaned_matrix = preprocess_image(temp_filename)
+            # 1. Trigger OpenCV Operations
+            cleaned_matrix = preprocess_image(target_file_path)
             
-            # OCR Engine Layer
+            # 2. Trigger OCR Matrix Sweep
             raw_text_stream, low_confidence_registry = extract_structured_text(cleaned_matrix)
             
-            # Parsing Analytics Layer
+            # 3. Trigger Deterministic Data Parser
             final_json_payload = parse_document_context(raw_text_stream, low_confidence_registry)
             
-            # 3. Render Visual Analytics Panels
+            # --- Render Dashboard Analytics Layer ---
             with col1:
                 st.subheader("🖼️ Processed Image Grid Visualizer")
-                # Convert grayscale matrix back to RGB channel sequence for screen mapping
                 display_img = cv2.cvtColor(cleaned_matrix, cv2.COLOR_GRAY2RGB)
-                st.image(display_img, caption="Cleaned Image Layer sent to OCR engine", use_container_width=True)
+                st.image(display_img, caption="Enhanced Contrast Matrix Layer sent to OCR core", use_container_width=True)
                 
                 st.subheader("📦 Final Structured JSON Data Output")
                 st.json(final_json_payload)
@@ -63,10 +83,9 @@ if uploaded_file is not None:
                 else:
                     st.warning("OCR Engine returned empty token array strings.")
                     
-                # Highlight active error-handling validation parameters
                 st.subheader("⚠️ Human-in-the-Loop Risk Verification")
                 if final_json_payload["idp_validation_flags"]["low_confidence_detected"]:
-                    st.error("Low-confidence tokens captured! Verification required.")
+                    st.error("Low-confidence tokens captured! Manual review required.")
                     st.dataframe(low_confidence_registry)
                 else:
                     st.success("All character extraction vectors verified over 50% safety margin.")
@@ -75,6 +94,6 @@ if uploaded_file is not None:
             st.error(f"Execution Error within pipeline pipelines: {str(e)}")
             
         finally:
-            # Cleanup storage matrix vectors to maintain container stateless profiles
-            if os.path.exists(temp_filename):
-                os.remove(temp_filename)
+            # Cleanup dynamic custom uploads to maintain stateless footprint
+            if target_file_path.startswith("temp_") and os.path.exists(target_file_path):
+                os.remove(target_file_path)
