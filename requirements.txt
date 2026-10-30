@@ -2,3 +2,4 @@ streamlit
 opencv-python-headless
 pytesseract
 numpy
+groq
