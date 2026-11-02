@@ -127,10 +127,15 @@ Create a local file inside your project structure at `.streamlit/secrets.toml` a
 ```toml
 GROQ_API_KEY = "gsk_yOuRGroQApiKeyHerE..."
 ```
-
+To permanently bind the web portal interface to port 8506, confirm your `.streamlit/config.toml` includes:
+```toml
+[server]
+port = 8506
+address = "localhost"
+```
 ### 4. Start the Web Server Locally
 ```bash
-streamlit run app.py
+streamlit run app.py --server.port 8506 --server.address localhost
 ```
 
 ---
