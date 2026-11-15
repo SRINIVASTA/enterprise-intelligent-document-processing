@@ -2,6 +2,10 @@
 
 An enterprise-grade, microservice-ready **Intelligent Document Processing (IDP)** pipeline engineered in Python. This repository combines advanced computer vision text enhancement pipelines, raw Optical Character Recognition (OCR) matrix extraction arrays, spatial regular expression trees, and advanced LLM semantic parsing via Groq Cloud API to convert unstructured, noisy document images into schema-compliant, structured JSON datasets.
 
+## About
+
+**Enterprise Intelligent Document Processing (IDP) workstation** built with **Streamlit**, **OpenCV**, **Tesseract OCR**, and **Groq LLM (Llama 3)**. Combines **adaptive image preprocessing**, **spatial bounding-box regex parsing**, and **heuristic math fallback** to convert noisy invoices and documents into **structured JSON**.
+
 ---
 ![Enterprise IDP Platform](assets/dashboard-preview.png)
 ---
@@ -139,4 +143,31 @@ streamlit run app.py --server.port 8506 --server.address localhost
 ```
 
 ---
+
+## ⚠️ Disclaimer
+
+This project is an **Intelligent Document Processing (IDP)** proof-of-concept intended strictly for educational, research, and technical evaluation purposes. Automated OCR and LLM-extracted JSON outputs may contain inaccuracies on degraded or complex documents and must undergo human-in-the-loop verification before use in production accounting, financial auditing, or compliance workflows.
+
+Users are responsible for securing their own `GROQ_API_KEY` locally (such as within `.streamlit/secrets.toml`), adhering to Groq API rate limits and terms of service, and ensuring that sensitive invoices, personal identifiable information (PII), or confidential documents are handled in compliance with applicable data privacy laws.
+
+---
+
+## 🛡️ License, Copyright & Compliance Notices
+
+**All Rights Reserved © 2026 T A Srinivas.**
+
+> **Strict Intellectual Property Notice:** This repository is strictly for portfolio viewing and technical evaluation purposes. **DO NOT COPY, CLONE, FORK, OR REDISTRIBUTE** this source code, architecture, or documentation. Stolen copies or unauthorized forks will be reported immediately for a **GitHub DMCA copyright takedown**.
+
+For corporate licensing, enterprise deployment, or commercial inquiries, please contact **`tasrinivass@gmail.com`**.
+
+* **Lead Architect & Developer:** [Srinivasta](https://github.com/SRINIVASTA)
+
+### 🌐 Let’s Connect
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/srinivas-t-a-557637119/)
+[![Kaggle](https://img.shields.io/badge/Kaggle-20BEFF?style=for-the-badge&logo=kaggle&logoColor=white)](https://www.kaggle.com/srinivasta)
+[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:tasrinivass@gmail.com)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/srinivasta)
+[![Website](https://img.shields.io/badge/Website-000000?style=for-the-badge&logo=website&logoColor=white)](https://srinivasta.github.io)
+
 💡 *Engineered with automated data processing logic to bridge the gap between unstructured, degraded image assets and structured database records.*
