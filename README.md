@@ -14,6 +14,7 @@ An enterprise-grade, microservice-ready **Intelligent Document Processing (IDP)*
 
 The layout below illustrates how data transforms as it flows sequentially through the system matrix segments, branching dynamically into either Spatial Regex Parsing or the Heuristic Math LLM Engine depending on your selected Pipeline Configuration:
 
+```mermaid
 flowchart TD
     A[Raw Image / Invoice Upload] e1@-->|Ingestion Layer| B(Sidebar Router: app.py)
     B e2@-->|Option 1: Mock Ingestion| C[sample.png Matrix Node]
