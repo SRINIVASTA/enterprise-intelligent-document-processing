@@ -14,45 +14,73 @@ An enterprise-grade, microservice-ready **Intelligent Document Processing (IDP)*
 
 The layout below illustrates how data transforms as it flows sequentially through the system matrix segments, branching dynamically into either Spatial Regex Parsing or the Heuristic Math LLM Engine depending on your selected Pipeline Configuration:
 
-```mermaid
-graph TD
-    A[Raw Image / Invoice Upload] -->|Ingestion Layer| B(Sidebar Router: app.py)
-    B -->|Option 1: Mock Ingestion| C[sample.png Matrix Node]
-    B -->|Option 2: Spatial Regex Mode| D[Temp Buffer Stream]
-    B -->|Option 3: Groq LLM Mode| DM[Temp Buffer Stream]
+flowchart TD
+    A[Raw Image / Invoice Upload] e1@-->|Ingestion Layer| B(Sidebar Router: app.py)
+    B e2@-->|Option 1: Mock Ingestion| C[sample.png Matrix Node]
+    B e3@-->|Option 2: Spatial Regex Mode| D[Temp Buffer Stream]
+    B e4@-->|Option 3: Groq LLM Mode| DM[Temp Buffer Stream]
     
-    C & D & DM -->|Image Ingestion Array| E[core/vision_engine.py]
+    C e5@-->|Image Ingestion Array| E[core/vision_engine.py]
+    D e6@-->|Image Ingestion Array| E
+    DM e7@-->|Image Ingestion Array| E
     
-    subgraph OpenCV Vision Engine Pipeline
-        E -->|Interpolation Scaling| F[2x Cubic Spline Matrix Scaling]
-        F -->|Chroma Channel Strip| G[Grayscale Conversion]
-        G -->|Dynamic Histogram Evaluation| H[Adaptive Background Inversion]
+    subgraph OpenCV_Vision_Engine_Pipeline [OpenCV Vision Engine Pipeline]
+        E e8@-->|Interpolation Scaling| F[2x Cubic Spline Matrix Scaling]
+        F e9@-->|Chroma Channel Strip| G[Grayscale Conversion]
+        G e10@-->|Dynamic Histogram Evaluation| H[Adaptive Background Inversion]
     end
     
-    H -->|Enhanced Contrast Gray Matrix| I[core/ocr_engine.py]
+    H e11@-->|Enhanced Contrast Gray Matrix| I[core/ocr_engine.py]
     
-    subgraph Tesseract OCR Engine Array
-        I -->|Enforce PSM 6 Bounds| J[Horizontal Cross-Column Sweep]
-        J -->|Token Generation Loop| K[Raw Text Block Accumulation]
-        J -->|Isolate Certainty Anomalies| L[Flag Low-Confidence Words < 50%]
+    subgraph Tesseract_OCR_Engine_Array [Tesseract OCR Engine Array]
+        I e12@-->|Enforce PSM 6 Bounds| J[Horizontal Cross-Column Sweep]
+        J e13@-->|Token Generation Loop| K[Raw Text Block Accumulation]
+        J e14@-->|Isolate Certainty Anomalies| L[Flag Low-Confidence Words < 50%]
     end
     
-    K & L -->|Pipeline Branching Route| M{Routing Controller}
+    K e15@-->|Pipeline Branching Route| M{Routing Controller}
+    L e16@-->|Pipeline Branching Route| M
     
-    subgraph Dynamic Dual-Engine Parsing Core
-        M -->|Option 1 & 2: Spatial Match| N[parse_document_context_spatial]
-        N -->|Geometry Box Evaluation| O[Bottom-Up Line Boundary Regex Mapping]
+    subgraph Dynamic_Dual_Engine_Parsing_Core [Dynamic Dual-Engine Parsing Core]
+        M e17@-->|Option 1 & 2: Spatial Match| N[parse_document_context_spatial]
+        N e18@-->|Geometry Box Evaluation| O[Bottom-Up Line Boundary Regex Mapping]
         
-        M -->|Option 3: Groq Mode| P[parse_document_context_via_llm]
-        P -->|Streamlit Secrets Authorization| Q[Secure API Gateway Tunnel]
-        Q -->|Llama-3 Structured Context Reasoning| R[Heuristic Math Fallback Engine]
-        R -->|Predictive Line-Item Computation| S[Reconstruct Corrupted/Missing Totals]
+        M e19@-->|Option 3: Groq Mode| P[parse_document_context_via_llm]
+        P e20@-->|Streamlit Secrets Authorization| Q[Secure API Gateway Tunnel]
+        Q e21@-->|Llama-3 Structured Context Reasoning| R[Heuristic Math Fallback Engine]
+        R e22@-->|Predictive Line-Item Computation| S[Reconstruct Corrupted/Missing Totals]
     end
     
-    O -->|Schema Assembly| T[Consolidated Streamlit JSON Dashboard View]
-    S -->|Schema Assembly| T
-    L -->|Risk Registry Array| U[Human-in-the-Loop Verification Panel]
-```
+    O e23@-->|Schema Assembly| T[Consolidated Streamlit JSON Dashboard View]
+    S e24@-->|Schema Assembly| T
+    L e25@-->|Risk Registry Array| U[Human-in-the-Loop Verification Panel]
+
+    %% Running Flow Animation Definitions
+    e1@{ animate: true }
+    e2@{ animate: true }
+    e3@{ animate: true }
+    e4@{ animate: true }
+    e5@{ animate: true }
+    e6@{ animate: true }
+    e7@{ animate: true }
+    e8@{ animate: true }
+    e9@{ animate: true }
+    e10@{ animate: true }
+    e11@{ animate: true }
+    e12@{ animate: true }
+    e13@{ animate: true }
+    e14@{ animate: true }
+    e15@{ animate: true }
+    e16@{ animate: true }
+    e17@{ animate: true }
+    e18@{ animate: true }
+    e19@{ animate: true }
+    e20@{ animate: true }
+    e21@{ animate: true }
+    e22@{ animate: true }
+    e23@{ animate: true }
+    e24@{ animate: true }
+    e25@{ animate: true }
 
 ---
 
